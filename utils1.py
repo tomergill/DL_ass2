@@ -1,4 +1,4 @@
-dir = "pos"
+dir_name = "pos"
 
 TAGS = set()
 WORDS = set()
@@ -28,50 +28,45 @@ def read_data(fname):
     return sentences_and_tags
 
 
-train_raw, dev_raw, test_raw = read_data(dir + "/train"), read_data(dir + "/dev"), read_data(dir + "/test")
+train_raw, dev_raw= read_data(dir_name + "/train"), read_data(dir_name + "/dev")
 T2I = {tag: i for i, tag in enumerate(list(sorted(TAGS)))}
-I2T = {i: tag for tag, i in T2I}
+I2T = {i: tag for tag, i in T2I.iteritems()}
 W2I = {word: i+1 for i, word in enumerate(list(sorted(WORDS)))}
 W2I[START] = 0
 W2I[END] = -1
-I2W = {i: word for word, i in W2I}
+I2W = {i: word for word, i in W2I.iteritems()}
 
 
 def make_5_windows(sentences_and_tags):
     """
     Takes a list of sentences and each word's tag and create from them 5 word windows
     :param sentences_and_tags: list of lists (sentences), each is a list of (word, tag) tuples
-    :return: a list of tuples in the form (index of word by W2I, list of the 5-word window's indexes by W2I when the
-    center is the current word, index of tag by T2I)
+    :return: a list of tuples in the form (list of the 5-word window's indexes by W2I when the center is the
+    current word, index of tag by T2I)
     """
     windows = []
     for sentence in sentences_and_tags:
-        windows.append((W2I[sentence[0][0]],  # first word
-                        [W2I[START], 0, W2I[sentence[0][0]], W2I[sentence[1][0]], W2I[sentence[2][0]]],
+        # first word
+        windows.append(([W2I[START], 0, W2I[sentence[0][0]], W2I[sentence[1][0]], W2I[sentence[2][0]]],
                         T2I[sentence[0][1]]))
-
-        windows.append((W2I[sentence[1][0]],  # second word
-                        [W2I[START], W2I[sentence[0][0]], W2I[sentence[1][0]],
-                         W2I[sentence[2][0]], W2I[sentence[2][0]]],
+        # second word
+        windows.append(([W2I[START], W2I[sentence[0][0]], W2I[sentence[1][0]],W2I[sentence[2][0]], W2I[sentence[2][0]]],
                         T2I[sentence[1][1]]))
 
-        for i, (word, tag) in enumerate(sentence[2:-2]):  # third word up to n - 2 included
-            windows.append((W2I[word], [W2I[sentence[i-2][0]], W2I[sentence[i-1][0]], W2I[word],
+        for i, (word, tag) in enumerate(sentence[2:-2]):  # from third word, up to n - 2 included
+            windows.append(([W2I[sentence[i-2][0]], W2I[sentence[i-1][0]], W2I[word],
                                         W2I[sentence[i+1][0]], W2I[sentence[i+2][0]]], T2I[tag]))
-
-        windows.append((W2I[sentence[-2][0]],  # second to last word
-                        [W2I[sentence[-4][0]], W2I[sentence[-3][0]], W2I[sentence[-2][0]],
+        # second to last word
+        windows.append(([W2I[sentence[-4][0]], W2I[sentence[-3][0]], W2I[sentence[-2][0]],
                          W2I[sentence[-1][0]], W2I[END]],
                         T2I[sentence[-2][1]]))
-
-        windows.append((W2I[sentence[-1][0]],  # last word
-                        [W2I[sentence[-3][0]], W2I[sentence[-2][0]],
-                         W2I[sentence[-1][0]], W2I[END], W2I[END]],
+        # last word
+        windows.append(([W2I[sentence[-3][0]], W2I[sentence[-2][0]], W2I[sentence[-1][0]], W2I[END], W2I[END]],
                         T2I[sentence[-1][1]]))
     return windows
 
 
 TRAIN = make_5_windows(train_raw)
 DEV = make_5_windows(dev_raw)
-TEST = make_5_windows(test_raw)
+# TEST = make_5_windows(test_raw)
 
