@@ -28,7 +28,8 @@ def read_data(fname):
     return sentences_and_tags
 
 
-train_raw, dev_raw= read_data(dir_name + "/train"), read_data(dir_name + "/dev")
+train_raw = read_data(dir_name + "/train")
+dev_raw = read_data(dir_name + "/dev")
 T2I = {tag: i for i, tag in enumerate(list(sorted(TAGS)))}
 I2T = {i: tag for tag, i in T2I.iteritems()}
 W2I = {word: i+1 for i, word in enumerate(list(sorted(WORDS)))}
@@ -46,23 +47,11 @@ def make_5_windows(sentences_and_tags):
     """
     windows = []
     for sentence in sentences_and_tags:
-        # first word
-        windows.append(([W2I[START], 0, W2I[sentence[0][0]], W2I[sentence[1][0]], W2I[sentence[2][0]]],
-                        T2I[sentence[0][1]]))
-        # second word
-        windows.append(([W2I[START], W2I[sentence[0][0]], W2I[sentence[1][0]],W2I[sentence[2][0]], W2I[sentence[2][0]]],
-                        T2I[sentence[1][1]]))
+        sentences_and_tags = [START, START] + sentences_and_tags + [END, END]  # adds starts/end tags for start/last win
 
-        for i, (word, tag) in enumerate(sentence[2:-2]):  # from third word, up to n - 2 included
+        for i, (word, tag) in enumerate(sentence[2:-2]):  # from first word, up to n
             windows.append(([W2I[sentence[i-2][0]], W2I[sentence[i-1][0]], W2I[word],
                                         W2I[sentence[i+1][0]], W2I[sentence[i+2][0]]], T2I[tag]))
-        # second to last word
-        windows.append(([W2I[sentence[-4][0]], W2I[sentence[-3][0]], W2I[sentence[-2][0]],
-                         W2I[sentence[-1][0]], W2I[END]],
-                        T2I[sentence[-2][1]]))
-        # last word
-        windows.append(([W2I[sentence[-3][0]], W2I[sentence[-2][0]], W2I[sentence[-1][0]], W2I[END], W2I[END]],
-                        T2I[sentence[-1][1]]))
     return windows
 
 
