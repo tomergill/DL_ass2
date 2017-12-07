@@ -52,7 +52,7 @@ def train_net(net, data_loader, iter_num, optimizer, criterion, acc_loader):
             optimizer.step()
             cum_loss += loss.data[0]
         acc, loss = accuracy_and_loss_on(net, acc_loader, criterion)  # compute accuracy in each iteration
-        print "| %-2d | %1.4f | %8.5f | %f | %6.3f%% |" % (
+        print "| %-2d | %1.4f | %8.5f | %f | %5.2f %% |" % (
             i, cum_loss / len(data_loader), time.time() - start_time, loss, acc * 100)
     print "+----+--------+----------+----------+---------+"
 
@@ -85,24 +85,25 @@ def accuracy_and_loss_on(net, data_loader, criterion):
 
 
 def predict_by_windows(net, windows):
-    prediction, inputs = []
+    prediction, inputs = [], []
     for input in windows:
-        prediction += list(tr.max(net(Variable(input)).data, 1))
-        inputs += list(input[:, 2])
+        _, pred = tr.max(net(Variable(tr.LongTensor(input))).data, 1)
+        prediction.append(pred)
+        inputs.append(input[2])
     return prediction, inputs
 
 
 if __name__ == "__main__":
     train = True
-    save_model = True
-    test = True
-    model_args_path = "~/Desktop/Deep Learning/ass2"
-    load_model = True
+    save_model = False
+    test = False
+    model_args_path = "trained_model"
+    load_model = False
 
     EMBED_SIZE = 50
     WIN_SIZE = 5
     epcohes = 15
-    learning_rate = 0.001
+    learning_rate = 0.005
     batch_size = 1000
     hidden_dim = 100
 
@@ -132,8 +133,8 @@ if __name__ == "__main__":
 
     if test:
         predictions, inputs = predict_by_windows(net, ut.TEST)
-        pred_file = open("~/Desktop/Deep Learning/ass2/test1." + ut.dir_name, "w")
+        pred_file = open("test1." + ut.dir_name, "w")
         for i, pred in enumerate(predictions):
-            pred_file.write(ut.I2W[inputs[i]] + " " + ut.I2T[pred] + "\n")
+            pred_file.write(ut.I2W[inputs[i]] + " " + ut.I2T[pred[0]] + "\n")
         pred_file.close()
 
