@@ -1,14 +1,17 @@
+import random
+
 dir_name = "pos"
 
 TAGS = set()
 WORDS = set()
 
 START = 0  # start of sequence token
-END = -1  # end of sequence token
+END = 1  # end of sequence token
+UNKNOWN_WORD = "*UNKNOWN*"
 
 
 # TRAIN
-def read_data(fname):
+def read_data(fname, unknown_words=False):
     """
     reads the file, and creates lists from each sentence holding tuples (word, tag)
     :param fname: file to read from
@@ -18,7 +21,9 @@ def read_data(fname):
     current = []
     for line in file(fname):
         if line != "\n":
-            word, tag = line[:-1].split(' ')
+            word, tag = line[:-1].split()
+            if unknown_words is True and word not in WORDS:
+                word = UNKNOWN_WORD
             current.append((word, tag))
             WORDS.add(word)
             TAGS.add(tag)
@@ -29,12 +34,12 @@ def read_data(fname):
 
 
 train_raw = read_data(dir_name + "/train")
-dev_raw = read_data(dir_name + "/dev")
+dev_raw = read_data(dir_name + "/dev", unknown_words=True)
 T2I = {tag: i for i, tag in enumerate(list(sorted(TAGS)))}
 I2T = {i: tag for tag, i in T2I.iteritems()}
-W2I = {word: i+1 for i, word in enumerate(list(sorted(WORDS)))}
+W2I = {word: i+2 for i, word in enumerate(list(sorted(WORDS)))}
 W2I[START] = 0
-W2I[END] = -1
+W2I[END] = 1
 I2W = {i: word for word, i in W2I.iteritems()}
 
 
@@ -47,9 +52,10 @@ def make_5_windows(sentences_and_tags):
     """
     windows = []
     for sentence in sentences_and_tags:
-        sentences_and_tags = [START, START] + sentences_and_tags + [END, END]  # adds starts/end tags for start/last win
+        sentence = [(START, START), (START, START)] + sentence + [(END, END), (END, END)]  # adds starts/end tags for start/last win
 
-        for i, (word, tag) in enumerate(sentence[2:-2]):  # from first word, up to n
+        for j, (word, tag) in enumerate(sentence[2:-2]):  # from first word, up to n
+            i = j + 2
             windows.append(([W2I[sentence[i-2][0]], W2I[sentence[i-1][0]], W2I[word],
                                         W2I[sentence[i+1][0]], W2I[sentence[i+2][0]]], T2I[tag]))
     return windows
@@ -58,4 +64,21 @@ def make_5_windows(sentences_and_tags):
 TRAIN = make_5_windows(train_raw)
 DEV = make_5_windows(dev_raw)
 # TEST = make_5_windows(test_raw)
+
+# #########################
+# print DEV[:10]
+# DEV = [([random.randint(0, 10) for _ in range(5)], i % 10) for i in xrange(0, 10000)]
+# print DEV[:10]
+# #########################
+
+if __name__ == "__main__":
+    print "{"
+    for k, v in W2I.iteritems():
+        print " ", k, ":", v
+    print "}"
+    print "{"
+    for k, v in T2I.iteritems():
+        print " ", k, ":", v
+    print "}"
+
 
