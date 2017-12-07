@@ -97,7 +97,7 @@ if __name__ == "__main__":
     train = True
     save_model = False
     test = False
-    model_args_path = "trained_model"
+    model_args_path = "trained_model_" + ut.dir_name
     load_model = False
 
     EMBED_SIZE = 50
@@ -105,14 +105,14 @@ if __name__ == "__main__":
     epcohes = 15
     learning_rate = 0.005
     batch_size = 1000
-    hidden_dim = 100
+    hidden_dim = 75
 
     net = Net(len(ut.W2I), EMBED_SIZE, WIN_SIZE, hidden_dim, len(ut.T2I), batch_size)
 
     if load_model:
         net.load_state_dict(tr.load(model_args_path))
 
-    if train:
+    if train and net is not None:
         criterion = nn.CrossEntropyLoss()
         optimizer = opt.Adam(net.parameters(), learning_rate)
 
@@ -131,10 +131,15 @@ if __name__ == "__main__":
         if save_model:  # should save the net
             tr.save(net.state_dict(), model_args_path)
 
-    if test:
+    if test and net is not None:
         predictions, inputs = predict_by_windows(net, ut.TEST)
         pred_file = open("test1." + ut.dir_name, "w")
-        for i, pred in enumerate(predictions):
-            pred_file.write(ut.I2W[inputs[i]] + " " + ut.I2T[pred[0]] + "\n")
+        diff = 0  # difference in rows made by \n chars
+        for j, line in enumerate(file(ut.dir_name + "/test")):
+            i = j - diff
+            if line != "\n":
+                pred_file.write(line[:-1] + " " + ut.I2T[predictions[i][0]] + "\n")
+            else:
+                pred_file.write("\n")
+                diff += 1
         pred_file.close()
-

@@ -1,6 +1,6 @@
 import random
 
-dir_name = "pos"
+dir_name = "ner"
 
 TAGS = set()
 WORDS = set()
@@ -76,6 +76,7 @@ DEV = make_5_windows(dev_raw)
 # print DEV[:10]
 # #########################
 
+# FOR TESTS
 
 def read_test(fname):
     sentences = []
@@ -104,7 +105,7 @@ def make_5_windows_without_tags(sentences):
     return windows
 
 
-test_raw = read_test("pos_dev_test")
+test_raw = read_test(dir_name + "/test")
 TEST = make_5_windows_without_tags(test_raw)
 
 if __name__ == "__main__":
