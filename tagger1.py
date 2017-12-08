@@ -1,6 +1,6 @@
 import torch as tr
 import torch.nn as nn
-import torch.nn.functional as F
+import torch.nn.functional as f
 from torch.autograd import Variable
 import torch.optim as opt
 import torch.utils.data as utdata
@@ -9,47 +9,84 @@ import numpy as np
 import time
 
 
-# The Nueral Net
-class Net(nn.Module):
+STUDENT = {'name': 'Tomer Gill',
+           'ID': '318459450'}
 
-    def __init__(self, vocab_size, embedding_size, context_size, hid_dim, out_dim, batch_size):
+
+class Net(nn.Module):
+    """
+    Class for  the neural net model, an MLP model with one hidden layer and an embedding matrix.
+    """
+
+    def __init__(self, vocab_size, embedding_size, context_size, hid_dim, out_dim):
+        """
+        Initialize the parametrs of the neural net.
+        :param vocab_size: Size of vocabulary, how many words can be
+        :param embedding_size: The size of the vectors each word will be assigned
+        :param context_size: How many words are in a single input
+        :param hid_dim: Size of the first layer's output vector
+        :param out_dim: Size of output vector
+        """
         super(Net, self).__init__()
-        self.E = nn.Embedding(vocab_size, embedding_size)
+        self.E = nn.Embedding(vocab_size, embedding_size)  # Embedding matrix
         self.after_embed_size = embedding_size * context_size
         self.lin = nn.Linear(self.after_embed_size, hid_dim)
         self.lin2 = nn.Linear(hid_dim, out_dim)
-        self.bsize = batch_size
 
     def forward(self, x):
-        out = self.E(x).view(-1, self.after_embed_size)
-        out = self.lin(out)
-        out = F.tanh(out)
-        out = self.lin2(out)
+        """
+        Runs the input through the neural network and returns the output.
+        :param x: A torch.Autograd.Variable of a "context_size" vector (context size is defined in the constructor)
+        :return: An "out_dim" vector of outputs, each value is a score of how likely the tag should be this index
+        """
+        out = self.E(x).view(-1, self.after_embed_size)  # concating the embedding vectors
+        out = self.lin(out)  # first linear layer
+        out = f.tanh(out)  # non-linear function
+        out = self.lin2(out)  # second linear layer
         return out
 
 
 def make_data_loader(examples, batch_size=100, shuffle=True):
+    """
+    Makes a torch.utils.data.DataLoader for training and accuracy checks
+    :param examples: a list of tuples: (window, tag), where window is list of indexes of words, and tag is index for the
+    correct tag of the window's center
+    :param batch_size: How many examples should be in one batch
+    :param shuffle: Should shuffle the examples?
+    :return: The DataLoader
+    """
     x, y = zip(*examples)  # makes lists of windows and tags
     x, y = tr.from_numpy(np.array(x)), tr.from_numpy(np.array(y))
-    x, y = x.type(tr.LongTensor), y.type(tr.LongTensor)
+    x, y = x.type(tr.LongTensor), y.type(tr.LongTensor)  # convert lists to tensors
     train = utdata.TensorDataset(x, y)
     return utdata.DataLoader(train, batch_size, shuffle)
 
 
 def train_net(net, data_loader, iter_num, optimizer, criterion, acc_loader):
+    """
+    Trains the net and checks it's accuracy and loss on the dev data after each iteration of training on all the train
+    data. Prints it in a little pretty table.
+    :param net: The neural net to train
+    :param data_loader: The torch.utils.data.DataLoader to train on
+    :param iter_num: The number of desired iteration
+    :param optimizer: The optimizer for the learning process
+    :param criterion: The loss and grads calculator
+    :param acc_loader: torch.utils.data.DataLoader of the dev data (check accuracy and loss on it)
+    """
     print "+----+--------+----------+----------+---------+"
     print "| it |  loss  | time (s) | dev_loss | dev_acc |"
     print "+----+--------+----------+----------+---------+"
     for i in range(iter_num):
         cum_loss = 0.0
         start_time = time.time()
-        for _, (inputs, labels) in enumerate(data_loader, 0):
+
+        for _, (inputs, labels) in enumerate(data_loader, 0):  # go over all examples
             inputs, labels = Variable(inputs), Variable(labels)
             optimizer.zero_grad()
-            outputs = net(inputs)
-            loss = criterion(outputs, labels)
-            loss.backward()
-            optimizer.step()
+            outputs = net(inputs)  # compute output of net
+            loss = criterion(outputs, labels)  # compute loss
+            loss.backward()  # compute grads
+            optimizer.step()  # update parameters
             cum_loss += loss.data[0]
         acc, loss = accuracy_and_loss_on(net, acc_loader, criterion)  # compute accuracy in each iteration
         print "| %-2d | %1.4f | %8.5f | %f | %5.2f %% |" % (
@@ -58,25 +95,21 @@ def train_net(net, data_loader, iter_num, optimizer, criterion, acc_loader):
 
 
 def accuracy_and_loss_on(net, data_loader, criterion):
+    """
+    Predicts the tag of each example, and computes the loss and accuracy on the whole data,
+    :param net: Neural net to predict on
+    :param data_loader: torch.utils.data.DataLoader to predict on
+    :param criterion: The loss calculator
+    :return: a tuple: (accuracy, avg. loss) on the whole data
+    """
     good = bad = cum_loss = 0.0
     for data in data_loader:
         feats, labels = data
-        ################################
-        # print feats
-        # print labels
-        # for j in range(0, 1000, 100):
-        #     temp = []
-        #     for i in range(5):
-        #         temp.append(ut.I2W[feats[j, i]])
-        #     print temp
-        #     print ut.I2T[labels[j]]
-        # input()
-        ################################
         outputs = net(Variable(feats))
         _, predicted = tr.max(outputs.data, 1)
         comp = (predicted == labels)
         bad += (predicted != labels).sum()
-        if ut.dir_name == "ner":
+        if ut.dir_name == "ner":  # if on ner ignore correct O tagging
             comp = [0 if labels[i] == ut.T2I["O"] else score for i, score in enumerate(comp)]
         good += sum(comp)
         loss = criterion(outputs, Variable(labels))
@@ -85,6 +118,12 @@ def accuracy_and_loss_on(net, data_loader, criterion):
 
 
 def predict_by_windows(net, windows):
+    """
+    Predicts on each window the correct tag of the window's center
+    :param net: Neural net to predict on
+    :param windows: A list of lists, which are windows (list of indexes of words from the same sentence)
+    :return: A list of predictions and a list of the index of the words that were predicted, respectively
+    """
     prediction, inputs = [], []
     for input in windows:
         _, pred = tr.max(net(Variable(tr.LongTensor(input))).data, 1)
@@ -94,20 +133,20 @@ def predict_by_windows(net, windows):
 
 
 if __name__ == "__main__":
-    train = True
-    save_model = False
-    test = False
-    model_args_path = "trained_model_" + ut.dir_name
-    load_model = False
+    train = True  # should the network train
+    save_model = False  # should save the network parameters to a file?
+    test = False  # should predict using the network
+    model_args_path = "trained_model_" + ut.dir_name  # path to load/save model
+    load_model = False  # should the model be loaded from a file
 
     EMBED_SIZE = 50
     WIN_SIZE = 5
-    epcohes = 15
-    learning_rate = 0.005
+    epcohes = 15  # number of iterations
+    learning_rate = 0.01
     batch_size = 1000
-    hidden_dim = 75
+    hidden_dim = 200
 
-    net = Net(len(ut.W2I), EMBED_SIZE, WIN_SIZE, hidden_dim, len(ut.T2I), batch_size)
+    net = Net(len(ut.W2I), EMBED_SIZE, WIN_SIZE, hidden_dim, len(ut.T2I))
 
     if load_model:
         net.load_state_dict(tr.load(model_args_path))
@@ -131,7 +170,7 @@ if __name__ == "__main__":
         if save_model:  # should save the net
             tr.save(net.state_dict(), model_args_path)
 
-    if test and net is not None:
+    if test and net is not None:  # writes the predictions to a test1 file
         predictions, inputs = predict_by_windows(net, ut.TEST)
         pred_file = open("test1." + ut.dir_name, "w")
         diff = 0  # difference in rows made by \n chars

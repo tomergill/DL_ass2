@@ -1,6 +1,9 @@
-import random
 
-dir_name = "ner"
+
+STUDENT = {'name': 'Tomer Gill',
+           'ID': '318459450'}
+
+dir_name = "pos"
 
 TAGS = set()
 WORDS = set()
