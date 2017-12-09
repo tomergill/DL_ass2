@@ -8,8 +8,8 @@ dir_name = "pos"
 TAGS = set()
 WORDS = set()
 
-START = 0  # start of sequence token
-END = 1  # end of sequence token
+START = "*START*"  # start of sequence token
+END = "*END*"  # end of sequence token
 UNKNOWN_WORD = "*UNKNOWN*"
 
 WORDS.add(UNKNOWN_WORD)

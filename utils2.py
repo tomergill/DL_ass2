@@ -4,7 +4,7 @@ import math
 STUDENT = {'name': 'Tomer Gill',
            'ID': '318459450'}
 
-dir_name = "ner"
+dir_name = "pos"
 
 # get the pre-trained data
 words_vecs = np.loadtxt("wordVectors.txt")
