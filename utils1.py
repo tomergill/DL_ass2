@@ -19,6 +19,7 @@ def read_data(fname, unknown_words=False):
     """
     reads the file, and creates lists from each sentence holding tuples (word, tag)
     :param fname: file to read from
+    :param unknown_words If True and found a new word (that wasn't seen before) replaces it with UNKNOWN_WORD
     :return: a list of lists (sentences) each holds tuples as discussed above
     """
     sentences_and_tags = []
@@ -71,17 +72,14 @@ TRAIN = make_5_windows(train_raw)
 DEV = make_5_windows(dev_raw)
 
 
-# TEST = make_5_windows(test_raw)
-
-# #########################
-# print DEV[:10]
-# DEV = [([random.randint(0, 10) for _ in range(5)], i % 10) for i in xrange(0, 10000)]
-# print DEV[:10]
-# #########################
-
 # FOR TESTS
 
 def read_test(fname):
+    """
+    Reads a test file for prediction, which is just a list of words with \n seperating sentences from each other.
+    :param fname: Name of file
+    :return: A list of sentences (lists of words)
+    """
     sentences = []
     current = []
     for line in file(fname):
@@ -97,6 +95,14 @@ def read_test(fname):
 
 
 def make_5_windows_without_tags(sentences):
+    """
+    Creates a 5 word windows from each sentence.
+    For word i, it's window is [word i-2, word i-1, word i, word i+1, word i+ 2],
+    where each word comes from the same sentences.
+    For index < 0 there is a special START word, and likewise and END word for index >= len(sentence)
+    :param sentences: A list of sentences (lists of words)
+    :return: A list of all the windows from all the sentences
+    """
     windows = []
     for sentence in sentences:
         sentence = [START, START] + sentence + [END, END]

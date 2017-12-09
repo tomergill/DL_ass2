@@ -29,7 +29,7 @@ def most_similar(word, k):
         vec = words_vecs[index]
         distances = np.array([vec_dist(vec, other_vec) if np.any(other_vec != vec) else 0 for other_vec in words_vecs])
         max_ind = np.argpartition(distances, -k)[-k:]
-        similar = [(words[index], distances[index])  for index in max_ind]
+        similar = [(words[index], distances[index]) for index in max_ind]
         return similar
     except ValueError:  # word isn't in words
         return None
