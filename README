@@ -1,3 +1,8 @@
+&&&&&&&&&&&& ASS 2  &&&&&&&&&&&&
+Name:         Tomer Gill
+ID:           318459450
+u2 username:  gilltom
+
 ############ PART 1 ############
 In file "utils1.py" the train, dev and test data is loaded. In a variable called "dir_name" we can choose what directory the data will come from: "pos" or "ner".
 The neural network definition, train and prediction is in "tagger1.py". In variables called "train" and "test" can be specified whether the model will train / predict on test, respectively (boolean values).
@@ -7,3 +12,8 @@ The loading of the model is the first thing that will happen, if load_model is T
 To run, place tagger1.py, utils1.py and the pos and/or ner directories in the same place.
 Then, specify in the code the wanted parameters (directory of data, train, test) and run tagger1.py.
 If you wish to load the model params to a file, place it also with the above and change the appropriate variable in the code.
+
+############ PART 2 ############
+The structure of files and running method stays the same as in part 1, but now the files are "tagger2.py" and "utils2.py" respectively.
+It is also necessery to place the "wordVectors.txt" and the "vocab.txt" files in the same place as "tagger2.py" and "utils2.py".
+
