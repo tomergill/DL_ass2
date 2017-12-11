@@ -87,6 +87,11 @@ DEV = make_5_windows(dev_raw)
 
 
 def read_test(fname):
+    """
+    Reads a test file for prediction, which is just a list of words with \n seperating sentences from each other.
+    :param fname: Name of file
+    :return: A list of sentences (lists of words)
+    """
     sentences = []
     current = []
     for line in file(fname):
@@ -102,6 +107,14 @@ def read_test(fname):
 
 
 def make_5_windows_without_tags(sentences):
+    """
+        Creates a 5 word windows from each sentence.
+        For word i, it's window is [word i-2, word i-1, word i, word i+1, word i+ 2],
+        where each word comes from the same sentences.
+        For index < 0 there is a special START word, and likewise and END word for index >= len(sentence)
+        :param sentences: A list of sentences (lists of words)
+        :return: A list of all the windows from all the sentences
+        """
     windows = []
     for sentence in sentences:
         sentence = [START, START] + sentence + [END, END]

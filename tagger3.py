@@ -28,11 +28,11 @@ S2I = {suf: i for i, suf in enumerate(sorted(set(suffixes)))}
 
 
 def get_prefix_index_by_word_index(index):
-    return P2I[prefixes[i]]
+    return P2I[prefixes[index]]
 
 
 def get_suffix_index_by_word_index(index):
-    return S2I[suffixes[i]]
+    return S2I[suffixes[index]]
 
 
 class Net(nn.Module):
@@ -187,18 +187,18 @@ def predict_by_windows(net, windows):
 
 
 if __name__ == "__main__":
-    train = False  # should the network train
+    train = True  # should the network train
     save_model = False  # should save the network parameters to a file?
-    test = True  # should predict using the network
+    test = False  # should predict using the network
     model_args_path = "trained_model_" + ut.dir_name  # path to load/save model
-    load_model = True  # should the model be loaded from a file
+    load_model = False  # should the model be loaded from a file
 
     EMBED_SIZE = 50
     WIN_SIZE = 5
-    epcohes = 5  # number of iterations
+    epcohes = 15  # number of iterations
     learning_rate = 0.01
-    batch_size = 100
-    hidden_dim = 75
+    batch_size = 1000
+    hidden_dim = 150
     k = 3
 
     if ans:
@@ -215,6 +215,7 @@ if __name__ == "__main__":
 
         print "######################################################"
         print "Run parameters:"
+        print "*\tUsing Pre-trained Embedding Vectors: %s" % "Yes" if ans else "No"
         print "*\tData: " + ut.dir_name.upper()
         print "*\tEmbedding layer size: %d" % EMBED_SIZE
         print "*\tWindow size: %d" % WIN_SIZE
@@ -241,11 +242,3 @@ if __name__ == "__main__":
                 pred_file.write("\n")
                 diff += 1
         pred_file.close()
-
-    #######################################################
-    import os
-
-    duration = 1  # second
-    freq = 440  # Hz
-    os.system('play --no-show-progress --null --channels 1 synth %s sine %f' % (duration, freq))
-    #######################################################

@@ -4,10 +4,11 @@ ID:           318459450
 u2 username:  gilltom
 
 ############ PART 1 ############
-In file "utils1.py" the train, dev and test data is loaded. In a variable called "dir_name" we can choose what directory the data will come from: "pos" or "ner".
+In file "utils1.py" the train, dev and test data is loaded. In a variable called "dir_name" we can choose what directory the data will come from: "pos" or "ner". (It will be submitted with pos)
 The neural network definition, train and prediction is in "tagger1.py". In variables called "train" and "test" can be specified whether the model will train / predict on test, respectively (boolean values).
 Further more, the model's parameters can be loaded from / saved to a file. Variables "save_model" and "load_model" values can be True or False for either of those tasks, and the path to the load / save file is placed in a variable called "model_args_path".
 The loading of the model is the first thing that will happen, if load_model is True. Then training (if train=True), and then the model can be saved (if save_model=True). Only then the model will predict on test (test=True).
+(The code submitted is configured to train a network from the start, not load / save it and not predict on test).
 
 To run, place tagger1.py, utils1.py and the pos and/or ner directories in the same place.
 Then, specify in the code the wanted parameters (directory of data, train, test) and run tagger1.py.
@@ -16,4 +17,15 @@ If you wish to load the model params to a file, place it also with the above and
 ############ PART 2 ############
 The structure of files and running method stays the same as in part 1, but now the files are "tagger2.py" and "utils2.py" respectively.
 It is also necessery to place the "wordVectors.txt" and the "vocab.txt" files in the same place as "tagger2.py" and "utils2.py".
+(The code submitted is configured to train a network from the start, not load / save it and not predict on test).
 
+############ PART 3 ############
+In this part, tagger3.py uses the 2 utils files we've seen before: utils1.py (without pre-trained) & utils2.py (with).
+Place them, tagger3.py, the pos / ner folder and the vocab.txt & wordVectors.txt in the same place.
+Like in the previous parts, through the code the program can be changed to load the network from a file (or not),
+train (or not), save itself into a file (or not) and predict on the test files (or not).
+(The code submitted is configured to train a network from the start, not load / save it and not predict on test).
+To operate on pos / ner change the variable "dir_name" on utils1/2 (depends whether using the pre-trained vectors).
+
+At the start of the program, you'll be asked to enter input to determine whether to use the pre-trained vectors or not.
+Enter 'y' (/'Y'/"yes"/"YES"/"Yes") to use them, any other input will not use them.
